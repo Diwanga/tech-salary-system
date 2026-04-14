@@ -1,0 +1,8 @@
+com\techsalary\voteservice\config\AppConfig.class
+com\techsalary\voteservice\model\Vote.class
+com\techsalary\voteservice\controller\VoteController.class
+com\techsalary\voteservice\service\VoteService.class
+com\techsalary\voteservice\repository\VoteRepository.class
+com\techsalary\voteservice\config\SecurityConfig.class
+com\techsalary\voteservice\dto\VoteRequest.class
+com\techsalary\voteservice\VoteServiceApplication.class
