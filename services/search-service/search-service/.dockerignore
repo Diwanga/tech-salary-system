@@ -1,0 +1,15 @@
+# Docker ignore file for search-service
+.git
+.gitignore
+README.md
+*.md
+.mvn/wrapper/maven-wrapper.jar
+target/
+*.iml
+.idea/
+.vscode/
+.settings/
+.project
+.classpath
+k8s/
+database/
