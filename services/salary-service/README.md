@@ -3,8 +3,8 @@
 > **Owner:** (your name)  
 > **Port:** `8082`  
 > **Namespace:** `app`  
-> **Internal K8s URL:** `http://salary-service.app.svc.cluster.local:8082`
-
+> **Internal K8s URL:** `http://salary-service.app.svc.cluster.local:8082`  
+> **Salary service Docker Image:** `diwangaamasith/salary-service:latest`
 ---
 
 ## What This Service Does
