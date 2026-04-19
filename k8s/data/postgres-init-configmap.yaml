@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-sql
+  namespace: data
+data:
+  01-schemas.sql: |
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+    CREATE SCHEMA IF NOT EXISTS identity;
+    CREATE SCHEMA IF NOT EXISTS salary;
+    CREATE SCHEMA IF NOT EXISTS community;
+
+    CREATE TABLE IF NOT EXISTS identity.users (
+        id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        email         VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        role          VARCHAR(20) DEFAULT 'USER',
+        created_at    TIMESTAMP DEFAULT now()
+    );
+
+    CREATE TABLE IF NOT EXISTS identity.refresh_tokens (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id     UUID REFERENCES identity.users(id) ON DELETE CASCADE,
+        token_hash  VARCHAR(255) NOT NULL,
+        expires_at  TIMESTAMP NOT NULL,
+        revoked     BOOLEAN DEFAULT FALSE
+    );
+
+    CREATE TABLE IF NOT EXISTS salary.submissions (
+        id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        job_title        VARCHAR(255) NOT NULL,
+        company          VARCHAR(255),
+        anonymize        BOOLEAN DEFAULT TRUE,
+        country          VARCHAR(100) NOT NULL,
+        city             VARCHAR(100),
+        experience_years INT,
+        level            VARCHAR(50),
+        gross_salary     NUMERIC(14,2) NOT NULL,
+        currency         VARCHAR(10) DEFAULT 'LKR',
+        tech_stack       TEXT[],
+        status           VARCHAR(20) DEFAULT 'PENDING',
+        submitted_at     TIMESTAMP DEFAULT now(),
+        approved_at      TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_submissions_status  ON salary.submissions(status);
+    CREATE INDEX IF NOT EXISTS idx_submissions_country ON salary.submissions(country);
+    CREATE INDEX IF NOT EXISTS idx_submissions_title   ON salary.submissions(job_title);
+
+    CREATE TABLE IF NOT EXISTS community.votes (
+        id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        submission_id UUID REFERENCES salary.submissions(id) ON DELETE CASCADE,
+        user_id       UUID NOT NULL,
+        vote_type     VARCHAR(10) NOT NULL CHECK (vote_type IN ('UP', 'DOWN')),
+        voted_at      TIMESTAMP DEFAULT now(),
+        UNIQUE(submission_id, user_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS community.reports (
+        id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        submission_id UUID REFERENCES salary.submissions(id) ON DELETE CASCADE,
+        user_id       UUID NOT NULL,
+        reason        TEXT,
+        reported_at   TIMESTAMP DEFAULT now()
+    );
