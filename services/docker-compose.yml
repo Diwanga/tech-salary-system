@@ -51,9 +51,57 @@ services:
     networks:
       - techsalary-net
 
+  # ── Stats Service (Express.js) ─────────────────────────────
+  stats-service:
+    build:
+      context: ./stats-service
+      dockerfile: Dockerfile
+    container_name: techsalary-stats-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    environment:
+      PORT:        8085
+      DB_HOST:     postgres
+      DB_PORT:     5432
+      DB_NAME:     techsalary
+      DB_USER:     techsalary
+      DB_PASSWORD: techsalary_pass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8085/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - techsalary-net
+
+  # ── pgAdmin ────────────────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: techsalary-pgadmin
+    restart: unless-stopped
+    ports:
+      - "5051:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL:    admin@techsalary.lk
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - techsalary-net
+
 volumes:
   postgres_data:
     name: techsalary-postgres-data
+  pgadmin_data:
+    name: techsalary-pgadmin-data
 
 networks:
   techsalary-net:
