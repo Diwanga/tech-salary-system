@@ -79,6 +79,34 @@ services:
     networks:
       - techsalary-net
 
+  # ── Search Service (Express.js) ────────────────────────────
+  search-service:
+    build:
+      context: ./search-service
+      dockerfile: Dockerfile
+    container_name: techsalary-search-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    environment:
+      PORT:        8084
+      DB_HOST:     postgres
+      DB_PORT:     5432
+      DB_NAME:     techsalary
+      DB_USER:     techsalary
+      DB_PASSWORD: techsalary_pass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8084/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - techsalary-net
+
   # ── pgAdmin ────────────────────────────────────────────────
   pgadmin:
     image: dpage/pgadmin4:latest
