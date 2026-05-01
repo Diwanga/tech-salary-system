@@ -10,7 +10,7 @@ const client = axios.create({ baseURL: salaryServiceUrl });
  * @returns {Promise<object>}
  */
 const submitSalary = async (payload) => {
-  const { data } = await client.post('/submit', payload);
+  const { data } = await client.post('/v1/salaries', payload);
   return data;
 };
 

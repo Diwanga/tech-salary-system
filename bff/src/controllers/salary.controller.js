@@ -8,27 +8,31 @@ const { submitSalary } = require('../services/salary.service');
  */
 const submit = async (req, res, next) => {
   try {
-    const { company, role, salary, experience, location, anonymous } = req.body;
+    const { jobTitle, company, country, city, experienceYears, level, grossSalary, currency, techStack, anonymize } = req.body;
 
-    if (!company || !role || salary === undefined || experience === undefined) {
+    if (!jobTitle || grossSalary === undefined || !country) {
       return res.status(400).json({
-        error: 'company, role, salary, and experience are required',
+        error: 'jobTitle, grossSalary, and country are required',
       });
     }
 
-    if (isNaN(Number(salary)) || isNaN(Number(experience))) {
+    if (isNaN(Number(grossSalary))) {
       return res.status(400).json({
-        error: 'salary and experience must be numeric',
+        error: 'grossSalary must be numeric',
       });
     }
 
     const payload = {
-      company:    String(company).trim(),
-      role:       String(role).trim(),
-      salary:     Number(salary),
-      experience: Number(experience),
-      location:   location ? String(location).trim() : null,
-      anonymous:  Boolean(anonymous),
+      jobTitle:        String(jobTitle).trim(),
+      company:         company ? String(company).trim() : null,
+      country:         String(country).trim(),
+      city:            city ? String(city).trim() : null,
+      experienceYears: experienceYears != null ? Number(experienceYears) : null,
+      level:           level || null,
+      grossSalary:     Number(grossSalary),
+      currency:        currency || 'LKR',
+      techStack:       Array.isArray(techStack) ? techStack : [],
+      anonymize:       anonymize !== false,
     };
 
     const result = await submitSalary(payload);

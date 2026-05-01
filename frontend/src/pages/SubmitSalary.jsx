@@ -3,19 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-// import api from '../services/api';
+import api from '../services/api';
 
 export const SubmitSalary = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
+    jobTitle: '',
     company: '',
-    role: '',
-    salary: '',
-    experience: '',
-    location: '',
-    anonymous: true
+    country: '',
+    city: '',
+    experienceYears: '',
+    level: '',
+    grossSalary: '',
+    currency: 'LKR',
+    techStack: '',
+    anonymize: true
   });
 
   const handleChange = (e) => {
@@ -28,9 +32,13 @@ export const SubmitSalary = () => {
     setLoading(true);
     
     try {
-      // Mock API call
-      // await api.post('/salary/submit', formData);
-      await new Promise(r => setTimeout(r, 1000));
+      const payload = {
+        ...formData,
+        grossSalary: Number(formData.grossSalary),
+        experienceYears: formData.experienceYears ? Number(formData.experienceYears) : null,
+        techStack: formData.techStack ? formData.techStack.split(',').map(s => s.trim()).filter(Boolean) : [],
+      };
+      await api.post('/salary/submit', payload);
       
       setSuccess(true);
       setTimeout(() => {
@@ -69,27 +77,53 @@ export const SubmitSalary = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Job Title</label>
+                <Input name="jobTitle" value={formData.jobTitle} onChange={handleChange} required placeholder="e.g. Frontend Engineer" />
+              </div>
+              <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Company Name</label>
-                <Input name="company" value={formData.company} onChange={handleChange} required placeholder="e.g. Google" />
+                <Input name="company" value={formData.company} onChange={handleChange} placeholder="e.g. Google" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Job Role</label>
-                <Input name="role" value={formData.role} onChange={handleChange} required placeholder="e.g. Frontend Engineer" />
+                <label className="text-sm font-medium text-gray-700">Gross Salary</label>
+                <Input type="number" name="grossSalary" value={formData.grossSalary} onChange={handleChange} required min="0" placeholder="250000" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Annual Salary (USD)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-gray-500">$</span>
-                  <Input type="number" name="salary" value={formData.salary} onChange={handleChange} required min="0" className="pl-8" placeholder="120000" />
-                </div>
+                <label className="text-sm font-medium text-gray-700">Currency</label>
+                <select name="currency" value={formData.currency} onChange={handleChange} className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
+                  <option value="LKR">LKR</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Country</label>
+                <Input name="country" value={formData.country} onChange={handleChange} required placeholder="e.g. Sri Lanka" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">City</label>
+                <Input name="city" value={formData.city} onChange={handleChange} placeholder="e.g. Colombo" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Years of Experience</label>
-                <Input type="number" name="experience" value={formData.experience} onChange={handleChange} required min="0" step="0.5" placeholder="3" />
+                <Input type="number" name="experienceYears" value={formData.experienceYears} onChange={handleChange} min="0" max="50" placeholder="3" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Level</label>
+                <select name="level" value={formData.level} onChange={handleChange} className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
+                  <option value="">Select level</option>
+                  <option value="INTERN">Intern</option>
+                  <option value="JUNIOR">Junior</option>
+                  <option value="MID">Mid</option>
+                  <option value="SENIOR">Senior</option>
+                  <option value="LEAD">Lead</option>
+                  <option value="PRINCIPAL">Principal</option>
+                </select>
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <label className="text-sm font-medium text-gray-700">Location (Optional)</label>
-                <Input name="location" value={formData.location} onChange={handleChange} placeholder="e.g. San Francisco, CA or Remote" />
+                <label className="text-sm font-medium text-gray-700">Tech Stack (comma separated)</label>
+                <Input name="techStack" value={formData.techStack} onChange={handleChange} placeholder="e.g. React, TypeScript, Node.js" />
               </div>
             </div>
 
@@ -97,8 +131,8 @@ export const SubmitSalary = () => {
               <input 
                 type="checkbox" 
                 id="anonymous" 
-                name="anonymous" 
-                checked={formData.anonymous} 
+                name="anonymize" 
+                checked={formData.anonymize} 
                 onChange={handleChange}
                 className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
               />

@@ -3,41 +3,41 @@ import { Search as SearchIcon, Filter } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { SalaryCard } from '../components/SalaryCard';
-
-// Dummy data for visual development
-const DUMMY_DATA = [
-  { id: 1, company: 'Google', role: 'Senior Software Engineer', salary: 250000, experience: 5, location: 'Mountain View, CA', votes: 124, userVote: 0 },
-  { id: 2, company: 'Microsoft', role: 'Product Manager', salary: 180000, experience: 3, location: 'Redmond, WA', votes: 89, userVote: 1 },
-  { id: 3, company: 'Meta', role: 'Frontend Engineer', salary: 210000, experience: 4, location: 'Menlo Park, CA', votes: 45, userVote: 0 },
-  { id: 4, company: 'Amazon', role: 'Data Scientist', salary: 165000, experience: 2, location: 'Seattle, WA', votes: -5, userVote: -1 },
-  { id: 5, company: 'Stripe', role: 'Backend Engineer', salary: 220000, experience: 3, location: 'Remote', votes: 230, userVote: 0 },
-];
+import api from '../services/api';
 
 export const Search = () => {
-  const [salaries, setSalaries] = useState(DUMMY_DATA);
-  const [loading, setLoading] = useState(false);
+  const [salaries, setSalaries] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ query: '', company: '', role: '', experience: '' });
   const [showFilters, setShowFilters] = useState(false);
 
-  // In a real app we'd trigger a search API call when filters change or form is submitted
+  const fetchSalaries = async () => {
+    setLoading(true);
+    try {
+      const params = {};
+      if (filters.company) params.company = filters.company;
+      if (filters.role) params.role = filters.role;
+      if (filters.experience) params.experience = filters.experience;
+      if (filters.query) params.q = filters.query;
+      const { data } = await api.get('/search', { params });
+      setSalaries(data.results || []);
+    } catch (err) {
+      console.error('Search failed:', err);
+      setSalaries([]);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    // const fetchSalaries = async () => {
-    //   setLoading(true);
-    //   try {
-    //     const { data } = await api.get('/search', { params: filters });
-    //     setSalaries(data);
-    //   } catch (err) { ... }
-    //   setLoading(false);
-    // }
-    // fetchSalaries();
-    
-    // For dummy logic:
-    const filtered = DUMMY_DATA.filter(item => 
-      item.company.toLowerCase().includes(filters.query.toLowerCase()) || 
-      item.role.toLowerCase().includes(filters.query.toLowerCase())
-    );
-    setSalaries(filtered);
-  }, [filters.query]);
+    fetchSalaries();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchSalaries();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [filters.query, filters.company, filters.role, filters.experience]);
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6">

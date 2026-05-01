@@ -33,7 +33,7 @@ app.get('/health', async (_req, res) => {
 app.get('/search', async (req, res) => {
   try {
     const {
-      company, role, location, experience, level,
+      q, company, role, location, experience, level,
       country, city, techStack,
       minSalary, maxSalary,
       sortBy = 'date', sortDir = 'desc',
@@ -43,6 +43,13 @@ app.get('/search', async (req, res) => {
     const conditions = [];
     const params = [];
     let idx = 1;
+
+    // q — general search: matches company OR job_title
+    if (q) {
+      conditions.push(`(s.company ILIKE $${idx} OR s.job_title ILIKE $${idx})`);
+      params.push(`%${q}%`);
+      idx++;
+    }
 
     // company — partial match (ILIKE)
     if (company) {
