@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/votes")
@@ -41,7 +42,7 @@ public class VoteController {
 
     @GetMapping("/{submissionId}/count")
     public ResponseEntity<Map<String, Long>> getCount(
-            @PathVariable Long submissionId) {
+            @PathVariable UUID submissionId) {
         long count = voteService.getUpvoteCount(submissionId);
         return ResponseEntity.ok(Map.of("upvotes", count));
     }

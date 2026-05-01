@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +55,7 @@ public class VoteService {
         return saved;
     }
 
-    private void approveSubmission(Long submissionId) {
+    private void approveSubmission(UUID submissionId) {
         try {
             String url = salaryServiceUrl + "/salaries/" + submissionId + "/approve";
             restTemplate.put(url, null);
@@ -64,7 +65,7 @@ public class VoteService {
         }
     }
 
-    public long getUpvoteCount(Long submissionId) {
+    public long getUpvoteCount(UUID submissionId) {
         return voteRepository.countBySubmissionIdAndUpvote(submissionId, true);
     }
 }

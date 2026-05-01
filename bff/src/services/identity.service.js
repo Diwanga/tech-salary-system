@@ -10,17 +10,17 @@ const client = axios.create({ baseURL: identityServiceUrl });
  * @returns {Promise<{ token: string, user: object }>}
  */
 const loginUser = async (credentials) => {
-  const { data } = await client.post('/login', credentials);
+  const { data } = await client.post('/auth/login', credentials);
   return data;
 };
 
 /**
- * Calls the identity-service POST /signup endpoint.
+ * Calls the identity-service POST /auth/signup endpoint.
  * @param {{ email: string, password: string }} payload
  * @returns {Promise<object>}
  */
 const signupUser = async (payload) => {
-  const { data } = await client.post('/signup', payload);
+  const { data } = await client.post('/auth/signup', payload);
   return data;
 };
 

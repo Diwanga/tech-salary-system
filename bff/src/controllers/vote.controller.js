@@ -4,7 +4,7 @@ const { castVote } = require('../services/vote.service');
 /**
  * POST /api/vote
  * Protected route — req.user is set by the authenticate middleware.
- * Validates inputs then forwards to vote-service with the authenticated user id.
+ * Converts frontend vote format to vote-service format and forwards.
  */
 const vote = async (req, res, next) => {
   try {
@@ -18,9 +18,11 @@ const vote = async (req, res, next) => {
       return res.status(400).json({ error: 'vote must be 1, 0, or -1' });
     }
 
-    // req.user.id is injected by the authenticate middleware from the JWT payload
-    const userId = req.user.id || req.user.sub;
-    const result = await castVote({ salaryId, vote: Number(voteValue) }, userId);
+    // Convert: 1 = upvote (true), -1 = downvote (false), 0 = no vote
+    const upvote = Number(voteValue) === 1;
+
+    const authHeader = req.headers.authorization;
+    const result = await castVote({ submissionId: salaryId, upvote }, authHeader);
     return res.status(200).json(result);
   } catch (err) {
     next(err);

@@ -26,4 +26,4 @@ services:
 
 # How many upvotes needed to approve a submission
 voting:
-  approval-threshold: 3
+  approval-threshold: 1

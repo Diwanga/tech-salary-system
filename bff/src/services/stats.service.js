@@ -13,4 +13,9 @@ const getStats = async () => {
   return data;
 };
 
-module.exports = { getStats };
+const getTopCompanies = async () => {
+  const { data } = await client.get('/stats/top-companies');
+  return data;
+};
+
+module.exports = { getStats, getTopCompanies };

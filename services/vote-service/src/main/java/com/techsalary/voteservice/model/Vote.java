@@ -3,6 +3,7 @@ package com.techsalary.voteservice.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(
@@ -21,7 +22,7 @@ public class Vote {
     private Long id;
 
     @Column(name = "submission_id", nullable = false)
-    private Long submissionId;
+    private UUID submissionId;
 
     // We store userId but NOT email — privacy is maintained
     @Column(name = "user_id", nullable = false)

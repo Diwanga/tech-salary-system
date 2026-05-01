@@ -63,7 +63,7 @@ export const SalaryCard = ({ data, onVote }) => {
           
           <div className="text-right flex flex-col items-end gap-3">
             <div className="text-2xl font-bold tracking-tight text-gray-900">
-              {data.currency || 'LKR'} {Number(data.grossSalary).toLocaleString()}
+              LKR {Number(data.grossSalary).toLocaleString()}
             </div>
             
             <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-100">

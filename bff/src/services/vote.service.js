@@ -6,13 +6,13 @@ const client = axios.create({ baseURL: voteServiceUrl });
 
 /**
  * Forwards a vote action to the vote-service.
- * @param {{ salaryId: string|number, vote: 1 | 0 | -1 }} payload
- * @param {string} userId  — extracted from verified JWT, passed as header
+ * @param {{ submissionId: string, upvote: boolean }} payload
+ * @param {string} authHeader — Authorization header to forward
  * @returns {Promise<object>}
  */
-const castVote = async (payload, userId) => {
-  const { data } = await client.post('/vote', payload, {
-    headers: { 'x-user-id': userId },
+const castVote = async (payload, authHeader) => {
+  const { data } = await client.post('/votes', payload, {
+    headers: { 'Authorization': authHeader },
   });
   return data;
 };

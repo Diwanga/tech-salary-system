@@ -1,5 +1,5 @@
 'use strict';
-const { getStats } = require('../services/stats.service');
+const { getStats, getTopCompanies } = require('../services/stats.service');
 
 /**
  * GET /api/stats
@@ -15,4 +15,16 @@ const stats = async (req, res, next) => {
   }
 };
 
-module.exports = { stats };
+/**
+ * GET /api/stats/top-companies
+ */
+const topCompanies = async (req, res, next) => {
+  try {
+    const result = await getTopCompanies();
+    return res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { stats, topCompanies };

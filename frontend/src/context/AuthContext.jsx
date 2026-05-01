@@ -30,17 +30,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // try {
-    //   const response = await api.post('/login', { email, password });
-    //   localStorage.setItem('token', response.data.token);
-    //   setUser(response.data.user);
-    // } catch (error) {
-    //   throw error;
-    // }
-    
-    // Mock login
-    localStorage.setItem('token', 'mock_jwt_token_123');
-    setUser({ email });
+    const response = await api.post('/login', { email, password });
+    localStorage.setItem('token', response.data.token);
+    setUser({ id: response.data.userId, email });
   };
 
   const logout = () => {

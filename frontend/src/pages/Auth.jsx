@@ -3,6 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import api from '../services/api';
 import { Input } from '../components/ui/Input';
 
 export const Auth = () => {
@@ -24,7 +25,8 @@ export const Auth = () => {
       if (isLogin) {
         await login(email, password);
       } else {
-        // Mock signup (normally we'd call api.post('/signup') then login)
+        // Signup then login
+        await api.post('/signup', { email, password });
         await login(email, password);
       }
       navigate('/search');

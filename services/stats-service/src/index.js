@@ -48,6 +48,23 @@ app.get('/stats', async (_req, res) => {
   }
 });
 
+// ── GET /stats/top-companies ─────────────────────────────────
+app.get('/stats/top-companies', async (_req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT company, ROUND(AVG(gross_salary))::int AS avg_salary
+      FROM salary.submissions
+      GROUP BY company
+      ORDER BY avg_salary DESC
+      LIMIT 5
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Top companies query failed:', err.message);
+    res.status(500).json({ error: 'Failed to fetch top companies' });
+  }
+});
+
 // ── Start server ─────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`stats-service listening on port ${PORT}`);
