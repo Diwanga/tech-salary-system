@@ -15,8 +15,7 @@ spec:
     spec:
       containers:
         - name: identity-service
-          image: diwangaamasith/identity-service:latest
-          imagePullPolicy: Always
+          image: aelita1999/identity-service:v1
           ports:
             - containerPort: 8081
           env:
@@ -37,13 +36,13 @@ spec:
                   key: DB_USER
             - name: DB_PASSWORD
               valueFrom:
-                secretKeyRef:
-                  name: app-secrets
+                configMapKeyRef:
+                  name: app-config
                   key: DB_PASSWORD
             - name: JWT_SECRET
               valueFrom:
-                secretKeyRef:
-                  name: app-secrets
+                configMapKeyRef:
+                  name: app-config
                   key: JWT_SECRET
           readinessProbe:
             httpGet:
@@ -51,20 +50,12 @@ spec:
               port: 8081
             initialDelaySeconds: 30
             periodSeconds: 10
-            failureThreshold: 5
           livenessProbe:
             httpGet:
               path: /auth/health
               port: 8081
             initialDelaySeconds: 60
-            periodSeconds: 20
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "250m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
+            periodSeconds: 15
 ---
 apiVersion: v1
 kind: Service

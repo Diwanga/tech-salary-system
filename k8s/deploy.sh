@@ -1,17 +1,29 @@
 #!/bin/bash
 set -e
 
-echo "☸️  Deploying TechSalary to Minikube..."
+echo "☸️  Deploying TechSalary to K8s..."
 
-# # ── 1. Point Docker to Minikube daemon
-# echo "→ Pointing Docker to Minikube..."
-# eval $(minikube docker-env)
+# ── 1. Build all images
+echo "→ Building images..."
+docker build -t diwangaamasith/salary-service:latest   ./services/salary-service
+docker build -t diwangaamasith/identity-service:latest ./services/identity-service
+docker build -t diwangaamasith/vote-service:latest     ./services/vote-service
+docker build -t diwangaamasith/search-service:latest   ./services/search-service
+docker build -t diwangaamasith/stats-service:latest    ./services/stats-service
+docker build -t diwangaamasith/bff:latest              ./bff
+docker build -t diwangaamasith/frontend:latest         ./frontend
 
-# ── 2. Build image inside Minikube
-echo "→ Building salary-service image..."
-docker build -t techsalary/salary-service:latest ./services/salary-service
+# ── 2. Push to Docker Hub
+echo "→ Pushing images to Docker Hub..."
+docker push diwangaamasith/salary-service:latest
+docker push diwangaamasith/identity-service:latest
+docker push diwangaamasith/vote-service:latest
+docker push diwangaamasith/search-service:latest
+docker push diwangaamasith/stats-service:latest
+docker push diwangaamasith/bff:latest
+docker push diwangaamasith/frontend:latest
 
-# ── 3. Apply namespaces first
+# ── 3. Apply namespaces
 echo "→ Creating namespaces..."
 kubectl apply -f k8s/00-namespaces.yaml
 
@@ -28,27 +40,30 @@ kubectl apply -f k8s/data/postgres-init-configmap.yaml
 kubectl apply -f k8s/data/postgres-deployment.yaml
 
 # ── 6. Wait for Postgres
-echo "→ Waiting for Postgres to be ready..."
+echo "→ Waiting for Postgres..."
 kubectl wait --for=condition=ready pod \
-  -l app=postgres \
-  -n data \
-  --timeout=120s
+  -l app=postgres -n data --timeout=120s
 
-# ── 7. Deploy app services
-echo "→ Deploying salary-service..."
+# ── 7. Deploy all app services
+echo "→ Deploying app services..."
+kubectl apply -f k8s/app/identity-service-deployment.yaml
 kubectl apply -f k8s/app/salary-service-deployment.yaml
-## Here can add other services ##
+kubectl apply -f k8s/app/vote-service-deployment.yaml
+kubectl apply -f k8s/app/search-service-deployment.yaml
+kubectl apply -f k8s/app/stats-service-deployment.yaml
+kubectl apply -f k8s/app/bff-deployment.yaml
+kubectl apply -f k8s/app/frontend-deployment.yaml
 
 # ── 8. Apply Ingress
 echo "→ Applying Ingress..."
 kubectl apply -f k8s/ingress.yaml
 
-# ── 9. Wait for salary-service
-echo "→ Waiting for salary-service to be ready..."
-kubectl wait --for=condition=ready pod \
-  -l app=salary-service \
-  -n app \
-  --timeout=120s
+# ── 9. Wait for core services
+echo "→ Waiting for services to be ready..."
+kubectl wait --for=condition=ready pod -l app=identity-service -n app --timeout=120s
+kubectl wait --for=condition=ready pod -l app=salary-service   -n app --timeout=120s
+kubectl wait --for=condition=ready pod -l app=bff              -n app --timeout=120s
+kubectl wait --for=condition=ready pod -l app=frontend         -n app --timeout=120s
 
 echo ""
 echo "✅ Deployment complete!"
@@ -58,6 +73,7 @@ kubectl get pods -n data
 kubectl get pods -n app
 kubectl get ingress -n app
 echo ""
+echo "▶️  Add to /etc/hosts if not already:"
+echo "   127.0.0.1  techsalary.local"
 echo ""
-echo "▶️  Test:"
-echo "   curl http://techsalary.local/api/v1/salaries"
+echo "▶️  Open: http://techsalary.local"

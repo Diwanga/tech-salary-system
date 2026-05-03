@@ -4,17 +4,26 @@ metadata:
   name: techsalary-ingress
   namespace: app
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
   rules:
     - host: techsalary.local
       http:
         paths:
-          - path: /api(/|$)(.*)
-            pathType: ImplementationSpecific
+          # BFF — forward /api/* as-is, no rewrite
+          - path: /api
+            pathType: Prefix
             backend:
               service:
-                name: salary-service
+                name: bff
                 port:
-                  number: 8082
+                  number: 3000
+          # Frontend — everything else
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

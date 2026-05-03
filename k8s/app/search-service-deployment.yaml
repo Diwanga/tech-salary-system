@@ -1,25 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: identity-service
+  name: search-service
   namespace: app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: identity-service
+      app: search-service
   template:
     metadata:
       labels:
-        app: identity-service
+        app: search-service
     spec:
       containers:
-        - name: identity-service
-          image: diwangaamasith/identity-service:latest
+        - name: search-service
+          image: diwangaamasith/search-service:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8081
+            - containerPort: 8084
           env:
+            - name: PORT
+              value: "8084"
             - name: DB_HOST
               valueFrom:
                 configMapKeyRef:
@@ -30,6 +32,11 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: DB_NAME
             - name: DB_USER
               valueFrom:
                 configMapKeyRef:
@@ -40,41 +47,36 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: DB_PASSWORD
-            - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: JWT_SECRET
           readinessProbe:
             httpGet:
-              path: /auth/health
-              port: 8081
-            initialDelaySeconds: 30
+              path: /health
+              port: 8084
+            initialDelaySeconds: 15
             periodSeconds: 10
             failureThreshold: 5
           livenessProbe:
             httpGet:
-              path: /auth/health
-              port: 8081
-            initialDelaySeconds: 60
+              path: /health
+              port: 8084
+            initialDelaySeconds: 30
             periodSeconds: 20
           resources:
             requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
               memory: "256Mi"
               cpu: "250m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: identity-service
+  name: search-service
   namespace: app
 spec:
   selector:
-    app: identity-service
+    app: search-service
   ports:
-    - port: 8081
-      targetPort: 8081
+    - port: 8084
+      targetPort: 8084
   type: ClusterIP

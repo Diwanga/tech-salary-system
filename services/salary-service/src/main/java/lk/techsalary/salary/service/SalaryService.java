@@ -39,16 +39,34 @@ public class SalaryService {
         return toResponse(submission);
     }
 
+    // @Transactional
+    // public SalarySubmitResponse approve(UUID id) {
+    //     SalarySubmission submission = repository.findByIdAndStatus(id, SubmissionStatus.PENDING)
+    //             .orElseThrow(() -> new ResourceNotFoundException("Pending submission not found: " + id));
+    //     submission.setStatus(SubmissionStatus.APPROVED);
+    //     submission.setApprovedAt(LocalDateTime.now());
+    //     SalarySubmission saved = repository.save(submission);
+    //     log.info("Submission {} approved", id);
+    //     return toResponse(saved);
+    // }
+
     @Transactional
-    public SalarySubmitResponse approve(UUID id) {
-        SalarySubmission submission = repository.findByIdAndStatus(id, SubmissionStatus.PENDING)
-                .orElseThrow(() -> new ResourceNotFoundException("Pending submission not found: " + id));
-        submission.setStatus(SubmissionStatus.APPROVED);
-        submission.setApprovedAt(LocalDateTime.now());
-        SalarySubmission saved = repository.save(submission);
-        log.info("Submission {} approved", id);
-        return toResponse(saved);
+public SalarySubmitResponse approve(UUID id) {
+    SalarySubmission submission = repository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Submission not found: " + id));
+
+    // Already approved — just return, don't throw
+    if (submission.getStatus() == SubmissionStatus.APPROVED) {
+        log.info("Submission {} already approved, skipping", id);
+        return toResponse(submission);
     }
+
+    submission.setStatus(SubmissionStatus.APPROVED);
+    submission.setApprovedAt(LocalDateTime.now());
+    SalarySubmission saved = repository.save(submission);
+    log.info("Submission {} approved", id);
+    return toResponse(saved);
+}
 
     // ── Private helpers ──────────────────────────────────────
 

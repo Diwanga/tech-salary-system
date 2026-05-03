@@ -4,23 +4,50 @@ import { Button } from './ui/Button';
 import { AuthContext } from '../context/AuthContext';
 import { ArrowUp, ArrowDown, MapPin, Briefcase } from 'lucide-react';
 import { cn } from '../utils/cn';
+import api from '../services/api';
 
 export const SalaryCard = ({ data, onVote }) => {
   const { user } = useContext(AuthContext);
   const [localVote, setLocalVote] = useState(data.userVote || 0);
   const [votes, setVotes] = useState(data.votes || 0);
 
-  const handleVote = async (dir) => {
+  // const handleVote = async (dir) => {
+  //   if (!user) return;
+    
+  //   const newVote = localVote === dir ? 0 : dir; // Toggle logic
+  //   const diff = newVote - localVote;
+    
+  //   setLocalVote(newVote);
+  //   setVotes(votes + diff);
+
+  //   if (onVote) onVote(data.id, newVote);
+  // };
+
+const handleVote = async (dir) => {
     if (!user) return;
-    
-    const newVote = localVote === dir ? 0 : dir; // Toggle logic
+
+    const newVote = localVote === dir ? 0 : dir;
     const diff = newVote - localVote;
-    
+
+    // Optimistic update
     setLocalVote(newVote);
     setVotes(votes + diff);
 
+    try {
+await api.post('/vote', {
+    salaryId: data.id,   // ← must be salaryId not submissionId
+    vote: dir            // ← 1 or -1
+});
+    } catch (err) {
+        // Revert on error
+        setLocalVote(localVote);
+        setVotes(votes);
+        console.error('Vote failed:', err);
+        alert(err.response?.data?.error || 'Vote failed');
+    }
+
     if (onVote) onVote(data.id, newVote);
-  };
+};
 
   const location = [data.city, data.country].filter(Boolean).join(', ');
 

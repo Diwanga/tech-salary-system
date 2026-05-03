@@ -20,13 +20,19 @@ app.use(express.urlencoded({ extended: true }));
 // ── Request Logger ──────────────────────────────────────────────────────────
 app.use(requestLogger);
 
-// ── Rate Limiting ───────────────────────────────────────────────────────────
+// ── Rate Limiting ────200 requests / 15 min───────────────────────────────────────────────────────
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 200,
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   message: { error: 'Too many requests, please try again later.' },
+// });
+// app.use('/api', limiter);
+
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later.' },
+  windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  max: 1000000,                  // 1 million requests
 });
 app.use('/api', limiter);
 

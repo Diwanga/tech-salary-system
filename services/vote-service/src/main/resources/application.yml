@@ -19,11 +19,17 @@ spring:
         default_schema: community
     show-sql: true
 
-# URLs of other services - uses env vars in Kubernetes, localhost for local testing
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# URLs of other services
 services:
   identity-url: ${IDENTITY_SERVICE_URL:http://localhost:8081}
   salary-url: ${SALARY_SERVICE_URL:http://localhost:8082}
 
-# How many upvotes needed to approve a submission
+# Voting configuration
 voting:
   approval-threshold: 1

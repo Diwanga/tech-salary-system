@@ -1,5 +1,5 @@
 'use strict';
-const { castVote } = require('../services/vote.service');
+const { castVote, fetchVoteCount } = require('../services/vote.service');
 
 /**
  * POST /api/vote
@@ -29,4 +29,14 @@ const vote = async (req, res, next) => {
   }
 };
 
-module.exports = { vote };
+const getVoteCount = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await fetchVoteCount(id);
+    return res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { vote, getVoteCount };

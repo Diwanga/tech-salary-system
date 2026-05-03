@@ -15,9 +15,7 @@ spec:
     spec:
       containers:
         - name: salary-service
-#          image: techsalary/salary-service:latest
-#          imagePullPolicy: Never
-          image: diwangaamasith/salary-service:latest   # ← Docker Hub image
+          image: diwangaamasith/salary-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8082

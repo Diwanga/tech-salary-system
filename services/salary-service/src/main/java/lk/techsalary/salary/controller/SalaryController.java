@@ -40,17 +40,13 @@ public class SalaryController {
     }
 
     // Internal endpoint — called only by vote-service, NOT exposed via Ingress
-    @PatchMapping("/{id}/approve")
-    public ResponseEntity<ApiResponse<SalarySubmitResponse>> approve(
-            @PathVariable UUID id,
-            @RequestHeader("X-Internal-Token") String internalToken) {
+@PatchMapping("/{id}/approve")
+public ResponseEntity<ApiResponse<SalarySubmitResponse>> approve(
+        @PathVariable UUID id) {
 
-        if (!isValidInternalToken(internalToken)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        SalarySubmitResponse response = salaryService.approve(id);
-        return ResponseEntity.ok(ApiResponse.success(response, "Submission approved"));
-    }
+    SalarySubmitResponse response = salaryService.approve(id);
+    return ResponseEntity.ok(ApiResponse.success(response, "Submission approved"));
+}
 
     private boolean isValidInternalToken(String token) {
         String expected = System.getenv().getOrDefault("INTERNAL_SERVICE_TOKEN", "");

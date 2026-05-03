@@ -11,22 +11,56 @@ export const Search = () => {
   const [filters, setFilters] = useState({ query: '', company: '', role: '', experience: '' });
   const [showFilters, setShowFilters] = useState(false);
 
+  // const fetchSalaries = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const params = {};
+  //     if (filters.company) params.company = filters.company;
+  //     if (filters.role) params.role = filters.role;
+  //     if (filters.experience) params.experience = filters.experience;
+  //     if (filters.query) params.q = filters.query;
+  //     const { data } = await api.get('/search', { params });
+  //     setSalaries(data.results || []);
+  //   } catch (err) {
+  //     console.error('Search failed:', err);
+  //     setSalaries([]);
+  //   }
+  //   setLoading(false);
+  // };
+
   const fetchSalaries = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (filters.company) params.company = filters.company;
-      if (filters.role) params.role = filters.role;
-      if (filters.experience) params.experience = filters.experience;
-      if (filters.query) params.q = filters.query;
-      const { data } = await api.get('/search', { params });
-      setSalaries(data.results || []);
+        const params = {};
+        if (filters.company) params.company = filters.company;
+        if (filters.role) params.role = filters.role;
+        if (filters.experience) params.experience = filters.experience;
+        if (filters.query) params.q = filters.query;
+        
+        const { data } = await api.get('/search', { params });
+        const results = data.results || [];
+
+        // Fetch vote counts for each salary
+        const withVotes = await Promise.all(
+            results.map(async (salary) => {
+                try {
+                    const { data: voteData } = await api.get(
+                        `/votes/${salary.id}/count`
+                    );
+                    return { ...salary, votes: voteData.upvotes || 0 };
+                } catch {
+                    return { ...salary, votes: 0 };
+                }
+            })
+        );
+
+        setSalaries(withVotes);
     } catch (err) {
-      console.error('Search failed:', err);
-      setSalaries([]);
+        console.error('Search failed:', err);
+        setSalaries([]);
     }
     setLoading(false);
-  };
+};
 
   useEffect(() => {
     fetchSalaries();
@@ -84,7 +118,11 @@ export const Search = () => {
           <div className="py-12 text-center text-gray-500">Loading results...</div>
         ) : salaries.length > 0 ? (
           salaries.map(salary => (
-            <SalaryCard key={salary.id} data={salary} />
+            <SalaryCard 
+    key={salary.id} 
+    data={salary}
+    onVote={(id, vote) => console.log('Voted', id, vote)}
+/>
           ))
         ) : (
           <div className="py-12 text-center bg-gray-50 rounded-xl border border-gray-100 border-dashed">

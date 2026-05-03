@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: identity-service
+  name: vote-service
   namespace: app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: identity-service
+      app: vote-service
   template:
     metadata:
       labels:
-        app: identity-service
+        app: vote-service
     spec:
       containers:
-        - name: identity-service
-          image: diwangaamasith/identity-service:latest
+        - name: vote-service
+          image: diwangaamasith/vote-service:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8081
+            - containerPort: 8083
           env:
             - name: DB_HOST
               valueFrom:
@@ -40,22 +40,27 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: DB_PASSWORD
-            - name: JWT_SECRET
+            - name: IDENTITY_SERVICE_URL
               valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: JWT_SECRET
+                configMapKeyRef:
+                  name: app-config
+                  key: IDENTITY_SERVICE_URL
+            - name: SALARY_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: SALARY_SERVICE_URL
           readinessProbe:
             httpGet:
-              path: /auth/health
-              port: 8081
+              path: /votes/health
+              port: 8083
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 5
           livenessProbe:
             httpGet:
-              path: /auth/health
-              port: 8081
+              path: /votes/health
+              port: 8083
             initialDelaySeconds: 60
             periodSeconds: 20
           resources:
@@ -69,12 +74,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: identity-service
+  name: vote-service
   namespace: app
 spec:
   selector:
-    app: identity-service
+    app: vote-service
   ports:
-    - port: 8081
-      targetPort: 8081
+    - port: 8083
+      targetPort: 8083
   type: ClusterIP
