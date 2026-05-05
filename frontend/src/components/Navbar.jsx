@@ -53,9 +53,6 @@ export const Navbar = () => {
                 <Button variant="outline" size="sm" onClick={logout}>
                   Logout
                 </Button>
-                 <Button variant="outline" size="sm" onClick={logout}>
-                  DIWANGA
-                </Button>
               </div>
             ) : (
               <Link to="/auth">
