@@ -12,6 +12,7 @@ export const Home = () => {
         <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto">
           Make informed decisions about your career. View anonymous salaries, track market trends, and get paid what you're worth.
         </p>
+        <h1>TESTING CICD</h1>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 pt-4">
