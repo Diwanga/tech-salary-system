@@ -32,4 +32,4 @@ services:
 
 # Voting configuration
 voting:
-  approval-threshold: 1
+  approval-threshold: 2

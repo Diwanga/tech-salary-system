@@ -8,46 +8,32 @@ import api from '../services/api';
 
 export const SalaryCard = ({ data, onVote }) => {
   const { user } = useContext(AuthContext);
-  const [localVote, setLocalVote] = useState(data.userVote || 0);
-  const [votes, setVotes] = useState(data.votes || 0);
+  const [votes, setVotes] = useState(Math.max(data.votes || 0, 0));
+  const [status, setStatus] = useState(data.status || 'PENDING');
+  const [voting, setVoting] = useState(false);
 
-  // const handleVote = async (dir) => {
-  //   if (!user) return;
-    
-  //   const newVote = localVote === dir ? 0 : dir; // Toggle logic
-  //   const diff = newVote - localVote;
-    
-  //   setLocalVote(newVote);
-  //   setVotes(votes + diff);
+  const handleVote = async (dir) => {
+    if (!user || voting) return;
 
-  //   if (onVote) onVote(data.id, newVote);
-  // };
-
-const handleVote = async (dir) => {
-    if (!user) return;
-
-    const newVote = localVote === dir ? 0 : dir;
-    const diff = newVote - localVote;
-
-    // Optimistic update
-    setLocalVote(newVote);
-    setVotes(votes + diff);
-
+    setVoting(true);
     try {
-await api.post('/vote', {
-    salaryId: data.id,   // ← must be salaryId not submissionId
-    vote: dir            // ← 1 or -1
-});
-    } catch (err) {
-        // Revert on error
-        setLocalVote(localVote);
-        setVotes(votes);
-        console.error('Vote failed:', err);
-        alert(err.response?.data?.error || 'Vote failed');
-    }
+      const { data: result } = await api.post('/vote', {
+        salaryId: data.id,
+        vote: dir,
+      });
 
-    if (onVote) onVote(data.id, newVote);
-};
+      // Update from server response
+      setVotes(Math.max(result.votes, 0));
+      setStatus(result.status);
+
+      if (onVote) onVote(data.id, result);
+    } catch (err) {
+      console.error('Vote failed:', err);
+      alert(err.response?.data?.error || 'Vote failed');
+    } finally {
+      setVoting(false);
+    }
+  };
 
   const location = [data.city, data.country].filter(Boolean).join(', ');
 
@@ -92,17 +78,24 @@ await api.post('/vote', {
             <div className="text-2xl font-bold tracking-tight text-gray-900">
               LKR {Number(data.grossSalary).toLocaleString()}
             </div>
+
+            <span className={cn(
+              "text-xs font-semibold px-2 py-0.5 rounded-full",
+              status === 'APPROVED'
+                ? "bg-green-100 text-green-700"
+                : "bg-yellow-100 text-yellow-700"
+            )}>
+              {status}
+            </span>
             
             <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-100">
               <button
                 onClick={() => handleVote(1)}
-                disabled={!user}
+                disabled={!user || voting}
                 className={cn(
                   "p-1.5 rounded-md transition-colors",
-                  localVote === 1 
-                    ? "bg-primary-100 text-primary-600" 
-                    : "text-gray-400 hover:text-gray-900 hover:bg-gray-200",
-                  !user && "opacity-50 cursor-not-allowed"
+                  "text-gray-400 hover:text-gray-900 hover:bg-gray-200",
+                  (!user || voting) && "opacity-50 cursor-not-allowed"
                 )}
                 title={!user ? "Login to vote" : "Upvote"}
               >
@@ -110,19 +103,17 @@ await api.post('/vote', {
               </button>
               <span className={cn(
                 "min-w-[1.5rem] text-center text-sm font-medium",
-                votes > 0 ? "text-primary-600" : votes < 0 ? "text-red-600" : "text-gray-600"
+                votes > 0 ? "text-primary-600" : "text-gray-600"
               )}>
                 {votes}
               </span>
               <button
                 onClick={() => handleVote(-1)}
-                disabled={!user}
+                disabled={!user || voting}
                 className={cn(
                   "p-1.5 rounded-md transition-colors",
-                  localVote === -1 
-                    ? "bg-red-100 text-red-600" 
-                    : "text-gray-400 hover:text-gray-900 hover:bg-gray-200",
-                  !user && "opacity-50 cursor-not-allowed"
+                  "text-gray-400 hover:text-gray-900 hover:bg-gray-200",
+                  (!user || voting) && "opacity-50 cursor-not-allowed"
                 )}
                 title={!user ? "Login to vote" : "Downvote"}
               >

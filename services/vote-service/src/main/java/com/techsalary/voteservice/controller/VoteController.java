@@ -1,7 +1,7 @@
 package com.techsalary.voteservice.controller;
 
 import com.techsalary.voteservice.dto.VoteRequest;
-import com.techsalary.voteservice.model.Vote;
+import com.techsalary.voteservice.dto.VoteResponse;
 import com.techsalary.voteservice.service.VoteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +35,9 @@ public class VoteController {
                     .body(Map.of("error", "Invalid or missing token"));
         }
 
-        // Step 2: Cast the vote
-        Vote vote = voteService.castVote(request, userId);
-        return ResponseEntity.ok(vote);
+        // Step 2: Cast the vote and get response with status
+        VoteResponse response = voteService.castVote(request, userId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{submissionId}/count")

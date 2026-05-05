@@ -14,16 +14,22 @@ const vote = async (req, res, next) => {
       return res.status(400).json({ error: 'salaryId is required' });
     }
 
-    if (![1, 0, -1].includes(Number(voteValue))) {
-      return res.status(400).json({ error: 'vote must be 1, 0, or -1' });
+    if (![1, -1].includes(Number(voteValue))) {
+      return res.status(400).json({ error: 'vote must be 1 or -1' });
     }
 
-    // Convert: 1 = upvote (true), -1 = downvote (false), 0 = no vote
+    // Convert: 1 = upvote (true), -1 = downvote (false)
     const upvote = Number(voteValue) === 1;
 
     const authHeader = req.headers.authorization;
     const result = await castVote({ submissionId: salaryId, upvote }, authHeader);
-    return res.status(200).json(result);
+
+    // Return standardized response
+    return res.status(200).json({
+      submission_id: result.submissionId,
+      votes: result.totalVotes,
+      status: result.status,
+    });
   } catch (err) {
     next(err);
   }

@@ -68,6 +68,29 @@ public SalarySubmitResponse approve(UUID id) {
     return toResponse(saved);
 }
 
+    @Transactional
+    public SalarySubmitResponse updateStatus(UUID id, String status) {
+        SalarySubmission submission = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Submission not found: " + id));
+
+        SubmissionStatus newStatus = SubmissionStatus.valueOf(status.toUpperCase());
+
+        if (submission.getStatus() == newStatus) {
+            return toResponse(submission);
+        }
+
+        submission.setStatus(newStatus);
+        if (newStatus == SubmissionStatus.APPROVED) {
+            submission.setApprovedAt(LocalDateTime.now());
+        } else {
+            submission.setApprovedAt(null);
+        }
+
+        SalarySubmission saved = repository.save(submission);
+        log.info("Submission {} status updated to {}", id, newStatus);
+        return toResponse(saved);
+    }
+
     // ── Private helpers ──────────────────────────────────────
 
     private SalarySubmission buildEntity(SalarySubmitRequest req) {

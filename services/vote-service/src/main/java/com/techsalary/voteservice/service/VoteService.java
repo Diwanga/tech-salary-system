@@ -1,6 +1,7 @@
 package com.techsalary.voteservice.service;
 
 import com.techsalary.voteservice.dto.VoteRequest;
+import com.techsalary.voteservice.dto.VoteResponse;
 import com.techsalary.voteservice.model.Vote;
 import com.techsalary.voteservice.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
@@ -56,19 +57,17 @@ public class VoteService {
     //     return saved;
     // }
 
-public Vote castVote(VoteRequest request, Long userId) {
+public VoteResponse castVote(VoteRequest request, Long userId) {
 
     // Check if user already voted
     Optional<Vote> existingVote = voteRepository
         .findBySubmissionIdAndUserId(request.getSubmissionId(), userId);
 
-    Vote saved;
-
     if (existingVote.isPresent()) {
         // Update existing vote
         Vote vote = existingVote.get();
         vote.setUpvote(request.getUpvote());
-        saved = voteRepository.save(vote);
+        voteRepository.save(vote);
         log.info("Vote updated for submission {}", request.getSubmissionId());
     } else {
         // New vote
@@ -76,7 +75,7 @@ public Vote castVote(VoteRequest request, Long userId) {
         vote.setSubmissionId(request.getSubmissionId());
         vote.setUserId(userId);
         vote.setUpvote(request.getUpvote());
-        saved = voteRepository.save(vote);
+        voteRepository.save(vote);
         log.info("New vote recorded for submission {}", request.getSubmissionId());
     }
 
@@ -87,28 +86,33 @@ public Vote castVote(VoteRequest request, Long userId) {
     log.info("Submission {} has {} upvotes (threshold: {})",
             request.getSubmissionId(), upvoteCount, approvalThreshold);
 
-    // Only approve if threshold reached
-    if (upvoteCount >= approvalThreshold) {
-        approveSubmission(request.getSubmissionId());
-    }
+    // Determine status based on threshold
+    String status = upvoteCount >= approvalThreshold ? "APPROVED" : "PENDING";
 
-    return saved;
+    // Update submission status in salary service
+    updateSubmissionStatus(request.getSubmissionId(), status);
+
+    return VoteResponse.builder()
+            .submissionId(request.getSubmissionId())
+            .totalVotes(upvoteCount)
+            .status(status)
+            .build();
 }
 
 
 
-private void approveSubmission(UUID submissionId) {
+private void updateSubmissionStatus(UUID submissionId, String status) {
     try {
-        String url = salaryServiceUrl + "/v1/salaries/" + submissionId + "/approve";
+        String url = salaryServiceUrl + "/v1/salaries/" + submissionId + "/status?status=" + status;
         restTemplate.exchange(
             url,
             org.springframework.http.HttpMethod.PATCH,
             org.springframework.http.HttpEntity.EMPTY,
             String.class
         );
-        log.info("Submission {} has been APPROVED!", submissionId);
+        log.info("Submission {} status updated to {}", submissionId, status);
     } catch (Exception e) {
-        log.error("Failed to approve submission {}: {}", submissionId, e.getMessage());
+        log.error("Failed to update submission {} status: {}", submissionId, e.getMessage());
     }
 }
 

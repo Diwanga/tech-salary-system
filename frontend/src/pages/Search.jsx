@@ -47,7 +47,11 @@ export const Search = () => {
                     const { data: voteData } = await api.get(
                         `/votes/${salary.id}/count`
                     );
-                    return { ...salary, votes: voteData.upvotes || 0 };
+                    return {
+                        ...salary,
+                        votes: voteData.upvotes || 0,
+                        status: (voteData.upvotes || 0) >= 2 ? 'APPROVED' : (salary.status || 'PENDING'),
+                    };
                 } catch {
                     return { ...salary, votes: 0 };
                 }

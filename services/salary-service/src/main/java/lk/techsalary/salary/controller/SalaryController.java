@@ -48,6 +48,16 @@ public ResponseEntity<ApiResponse<SalarySubmitResponse>> approve(
     return ResponseEntity.ok(ApiResponse.success(response, "Submission approved"));
 }
 
+    // Internal endpoint — called by vote-service to update submission status
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<SalarySubmitResponse>> updateStatus(
+            @PathVariable UUID id,
+            @RequestParam String status) {
+
+        SalarySubmitResponse response = salaryService.updateStatus(id, status);
+        return ResponseEntity.ok(ApiResponse.success(response, "Status updated to " + status));
+    }
+
     private boolean isValidInternalToken(String token) {
         String expected = System.getenv().getOrDefault("INTERNAL_SERVICE_TOKEN", "");
         return !expected.isEmpty() && expected.equals(token);
