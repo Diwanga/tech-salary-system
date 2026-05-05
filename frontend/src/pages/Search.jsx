@@ -103,15 +103,28 @@ export const Search = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-white rounded-xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
             <div>
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Company</label>
-              <Input placeholder="Any company" />
+              <Input
+                placeholder="Any company"
+                value={filters.company}
+                onChange={(e) => setFilters({ ...filters, company: e.target.value })}
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Role</label>
-              <Input placeholder="Any role" />
+              <Input
+                placeholder="Any role"
+                value={filters.role}
+                onChange={(e) => setFilters({ ...filters, role: e.target.value })}
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Experience (Years)</label>
-              <Input type="number" placeholder="Any" />
+              <Input
+                type="number"
+                placeholder="Any"
+                value={filters.experience}
+                onChange={(e) => setFilters({ ...filters, experience: e.target.value })}
+              />
             </div>
           </div>
         )}
